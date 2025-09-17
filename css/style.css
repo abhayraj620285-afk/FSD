@@ -1,0 +1,56 @@
+#one{
+    color: violet;
+}
+
+#two{
+    color: indigo;
+}
+
+#three{
+    color: blue;
+}
+
+#four{
+    color: green;
+}
+
+#five{
+    color: yellow;
+}
+#six{
+    color: orange;
+}
+#seven{
+    color: red;
+}
+#box{
+    background-color: blue;
+}
+/* .heading{
+    color: red;
+} */
+h1,h2,h3{
+    color: red;
+}
+
+#button1{
+    color: white;
+    background-color: #f67004;
+}
+
+#button2{
+    color: white;
+    background-color: #383BE5;
+
+}#button3{
+    color: white;
+    background-color: #2fee6c;
+}
+#button4{
+   background-color:aqua;
+   color: white;
+
+}
+#main{
+color: black;
+}

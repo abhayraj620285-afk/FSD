@@ -1,11 +1,316 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8">
+  <title>Animated Quiz with Leaderboard</title>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --secondary: #6366f1;
+      --success: #16a34a;
+      --error: #dc2626;
+      --bg: #f9fafb;
+      --text: #1f2937;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background: white;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      width: 400px;
+      text-align: center;
+      display: none;
+    }
+    #startScreen { display: block; }
+    .btn {
+      padding: 10px 15px;
+      margin: 5px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: var(--primary);
+      color: white;
+      font-size: 16px;
+      transition: transform 0.2s;
+    }
+    .btn:hover { transform: scale(1.05); }
+
+    /* Progress */
+    #progress {
+      width: 100%;
+      height: 8px;
+      background: #e5e7eb;
+      border-radius: 8px;
+      margin: 10px 0;
+      overflow: hidden;
+    }
+    #progressBar {
+      height: 100%;
+      width: 0;
+      background: var(--secondary);
+      transition: width 0.3s;
+    }
+
+    /* Timer */
+    #timer { font-weight: bold; margin: 10px; }
+
+    /* Animations */
+    @keyframes bounce {
+      0%,20%,50%,80%,100% { transform: translateY(0); }
+      40% { transform: translateY(-10px); }
+      60% { transform: translateY(-5px); }
+    }
+    .correct { background: var(--success)!important; animation: bounce 0.6s; }
+
+    @keyframes shake {
+      0%,100%{transform: translateX(0);}
+      20%,60%{transform: translateX(-6px);}
+      40%,80%{transform: translateX(6px);}
+    }
+    .wrong { background: var(--error)!important; animation: shake 0.4s; }
+
+    @keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
+    .fade-in { animation: fadeIn 0.5s; }
+
+    /* Score Chart */
+    #scoreChart {
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      margin: 10px auto;
+      background: conic-gradient(var(--success) calc(var(--percent,0)*1turn), #e5e7eb 0);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    /* Leaderboard */
+    #leaderboardList {
+      list-style: none;
+      padding: 0;
+      text-align: left;
+    }
+
+    /* 🎉 Win Screen */
+    #winScreen {
+      background: linear-gradient(135deg,#4f46e5,#6366f1,#16a34a);
+      color: white;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+      width: 400px;
+      text-align: center;
+      display: none;
+      position: relative;
+      overflow: hidden;
+    }
+    #winScreen h1 {
+      font-size: 2em;
+      margin-bottom: 10px;
+      animation: bounce 1.2s infinite;
+    }
+    .trophy {
+      font-size: 80px;
+      animation: spin 3s linear infinite;
+      margin: 20px 0;
+    }
+    @keyframes spin { 
+      0% { transform: rotate(0deg); } 
+      100% { transform: rotate(360deg); } 
+    }
+    .glow {
+      position: absolute;
+      top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.2) 20%, transparent 70%);
+      animation: rotateGlow 6s linear infinite;
+    }
+    @keyframes rotateGlow {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+  </style>
 </head>
 <body>
-    <p>hi</p>
+  <div class="container" id="startScreen">
+    <h2>Welcome to the Quiz</h2>
+    <input type="text" id="username" placeholder="Enter your name" />
+    <button class="btn" onclick="startQuiz()">Start Quiz</button>
+  </div>
+
+  <div class="container" id="quizScreen">
+    <div id="progress"><div id="progressBar"></div></div>
+    <h3 id="question"></h3>
+    <div id="options"></div>
+    <div id="timer">Time left: 15s</div>
+    <button class="btn" onclick="nextQuestion()">Next</button>
+  </div>
+
+  <div class="container" id="resultScreen">
+    <div id="scoreChart">0%</div>
+    <h3 id="result"></h3>
+    <button class="btn" onclick="restartQuiz()">Play Again</button>
+    <button class="btn" onclick="showLeaderboard()">Leaderboard</button>
+  </div>
+
+  <div class="container" id="leaderboardScreen">
+    <h2>Leaderboard</h2>
+    <ul id="leaderboardList"></ul>
+    <button class="btn" onclick="restartQuiz()">Play Again</button>
+  </div>
+
+  <!-- 🎉 Win Screen -->
+  <div class="container" id="winScreen">
+    <div class="glow"></div>
+    <h1>🏆 You Won!</h1>
+    <div class="trophy">🏆</div>
+    <p id="winMessage">Amazing job, Champion!</p>
+    <button class="btn" onclick="restartQuiz()">Play Again</button>
+    <button class="btn" onclick="showLeaderboard()">Leaderboard</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <script>
+    const questions = [
+      { question: "What does HTML stand for?", options: ["Hyper Text Markup Language","High Text Machine Language","Hyper Tool Multi Language","None"], answer: 0 },
+      { question: "What does CSS stand for?", options: ["Cascading Style Sheets","Computer Style Sheets","Creative Style System","Colorful Style System"], answer: 0 },
+      { question: "Inside which HTML element do we put JS?", options: ["<js>","<scripting>","<script>","<javascript>"], answer: 2 },
+      { question: "Which tag is used for a line break?", options: ["<br>","<lb>","<break>","<newline>"], answer: 0 },
+      { question: "Which property changes text color?", options: ["font-color","text-color","color","background-color"], answer: 2 }
+    ];
+
+    let currentQuestion=0,score=0,user="",timer,timeLeft=15,shuffledQuestions=[];
+
+    function shuffle(arr){
+      for(let i=arr.length-1;i>0;i--){
+        const j=Math.floor(Math.random()*(i+1));
+        [arr[i],arr[j]]=[arr[j],arr[i]];
+      }
+      return arr;
+    }
+
+    function startQuiz(){
+      user=document.getElementById("username").value.trim();
+      if(!user) return alert("Enter your name!");
+      document.getElementById("startScreen").style.display="none";
+      document.getElementById("quizScreen").style.display="block";
+      shuffledQuestions=shuffle([...questions]);
+      currentQuestion=0; score=0;
+      showQuestion();
+    }
+
+    function showQuestion(){
+      const q=document.getElementById("question");
+      q.innerText=shuffledQuestions[currentQuestion].question;
+      q.classList.remove("fade-in"); void q.offsetWidth; q.classList.add("fade-in");
+      const optionsDiv=document.getElementById("options");
+      optionsDiv.innerHTML="";
+      shuffledQuestions[currentQuestion].options.forEach((opt,i)=>{
+        const btn=document.createElement("button");
+        btn.innerText=opt; btn.classList.add("btn");
+        btn.onclick=()=>checkAnswer(btn,i);
+        optionsDiv.appendChild(btn);
+      });
+      updateProgress();
+      resetTimer();
+    }
+
+    function checkAnswer(button,selected){
+      clearInterval(timer);
+      const buttons=document.querySelectorAll("#options button");
+      buttons.forEach(b=>b.disabled=true);
+      if(selected===shuffledQuestions[currentQuestion].answer){
+        score++; button.classList.add("correct");
+      }else{
+        button.classList.add("wrong");
+        buttons[shuffledQuestions[currentQuestion].answer].classList.add("correct");
+      }
+    }
+
+    function nextQuestion(){
+      clearInterval(timer);
+      currentQuestion++;
+      if(currentQuestion<shuffledQuestions.length) showQuestion();
+      else endQuiz();
+    }
+
+    function resetTimer(){
+      timeLeft=15;
+      document.getElementById("timer").innerText=`Time left: ${timeLeft}s`;
+      timer=setInterval(()=>{
+        timeLeft--;
+        document.getElementById("timer").innerText=`Time left: ${timeLeft}s`;
+        if(timeLeft<=0){clearInterval(timer);nextQuestion();}
+      },1000);
+    }
+
+    function updateProgress(){
+      const percent=((currentQuestion)/shuffledQuestions.length)*100;
+      document.getElementById("progressBar").style.width=percent+"%";
+    }
+
+    function endQuiz(){
+      document.getElementById("quizScreen").style.display="none";
+      let percent=Math.round((score/shuffledQuestions.length)*100);
+      if(percent>=80){ // 🎉 Show Win Screen
+        document.getElementById("winScreen").style.display="block";
+        document.getElementById("winMessage").innerText=`${user}, you crushed it! ${score}/${shuffledQuestions.length}`;
+        launchConfetti();
+      }else{
+        document.getElementById("resultScreen").style.display="block";
+        document.getElementById("scoreChart").style.setProperty("--percent",percent/100);
+        document.getElementById("scoreChart").innerText=percent+"%";
+        document.getElementById("result").innerText=`${user}, you scored ${score}/${shuffledQuestions.length}`;
+      }
+      saveToLeaderboard(user,score);
+      showLeaderboard();
+    }
+
+    function saveToLeaderboard(name,score){
+      let leaderboard=JSON.parse(localStorage.getItem("leaderboard")||"[]");
+      leaderboard.push({name,score});
+      leaderboard.sort((a,b)=>b.score-a.score);
+      localStorage.setItem("leaderboard",JSON.stringify(leaderboard.slice(0,5)));
+    }
+
+    function showLeaderboard(){
+      const list=document.getElementById("leaderboardList");
+      if(!list) return;
+      let leaderboard=JSON.parse(localStorage.getItem("leaderboard")||"[]");
+      list.innerHTML="";
+      leaderboard.forEach((p,i)=>{
+        const li=document.createElement("li");
+        li.innerText=`${i+1}. ${p.name} - ${p.score}`;
+        list.appendChild(li);
+      });
+    }
+
+    function restartQuiz(){
+      document.querySelectorAll(".container").forEach(c=>c.style.display="none");
+      document.getElementById("startScreen").style.display="block";
+    }
+
+    // 🎉 Confetti
+    function launchConfetti(){
+      const duration=2*1000;
+      const end=Date.now()+duration;
+      (function frame(){
+        confetti({particleCount:5,angle:60,spread:55,origin:{x:0}});
+        confetti({particleCount:5,angle:120,spread:55,origin:{x:1}});
+        if(Date.now()<end){requestAnimationFrame(frame);}
+      })();
+    }
+  </script>
 </body>
 </html>
