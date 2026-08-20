@@ -36,13 +36,57 @@
 // (()=>{console.log("Hey..using IIFE")})();
 
 // Callback Function
-function sum(a, b){
-  return a+b;
+// function sum(a, b){
+//   return a+b;
+// }
+
+// function sumWithMsg(clbk, msg){
+//   const result = clbk(20, 40);
+//   return msg + " " + result;
+// }
+
+console.log(sumWithMsg(sum, "Hi...Sum"));
+function sumsqrt(a, b) {
+  return Math.sqrt(a) + Math.sqrt(b);
 }
 
-function sumWithMsg(clbk, msg){
-  const result = clbk(20, 40);
+function sumofsqrt(msg, clbk) {
+  const result = clbk(25, 100);
   return msg + " " + result;
 }
 
-console.log(sumWithMsg(sum, "Hi...Sum"));
+console.log(sumofsqrt("Abhay Raj", sumsqrt));
+
+Promise in js
+const myPromise = new Promise((resolve, reject) => {
+  let username = "ptomer40";
+  let password = "12345";
+  if(username == "ptomer40" && password == "12345"){
+    resolve("success");
+  }
+  else{
+    reject("Invalid user");
+  }
+})
+
+// myPromise.then((msg)=>{
+//   console.log(msg);
+// })
+// .catch(msg =>{
+//   console.log(msg);
+// })
+// .finally(() => console.log("All resources has been closed"))
+
+async function loginHandler(){
+  try{
+    const loginStatus = await myPromise;
+    console.log(loginStatus);
+  }catch(e){
+    console.log(e);
+  }
+  finally{
+    console.log("finally is working");
+  }
+}
+
+
