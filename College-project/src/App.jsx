@@ -4,7 +4,8 @@ import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import './App.css'
 import cat from './image/cat.jpg'
-
+import UseProps from './component/UseProps'
+import ICardGallery from './component/ICardGallery'
 function App() {
   const name = "Abhay Raj";
   const branch = "CSE";
@@ -12,14 +13,8 @@ function App() {
   const college = "ABES Engineering College";
 
   return (
-    <div style={{border:"10px solid red", width:"400px", height:"350px"}}>
-      <h2>Welcome to React Vite</h2>
-      <h2>My name is <span style = {{color:'red'}}>{name}</span></h2>
-      <h2>My branch is <span style = {{color:'red'}}>{branch}</span></h2>
-      <h2>My roll no. is <span style = {{color:'red'}}>{roll}</span></h2>
-      <h2>My college is <span style = {{color:'red'}}>{college}</span></h2>
-
-      <img src={cat} height={140} width={200}></img>
+    <div>
+     <ICardGallery/>
     </div>
   )
 }
