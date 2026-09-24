@@ -6,6 +6,7 @@ import './App.css'
 import cat from './image/cat.jpg'
 import UseProps from './component/UseProps'
 import ICardGallery from './component/ICardGallery'
+import IMBD from'./component/IMBD'
 function App() {
   const name = "Abhay Raj";
   const branch = "CSE";
@@ -14,7 +15,8 @@ function App() {
 
   return (
     <div>
-     <ICardGallery/>
+     {/* <ICardGallery/> */}
+     <IMBD/>
     </div>
   )
 }
